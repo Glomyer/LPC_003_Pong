@@ -1,12 +1,50 @@
 import turtle
 import os
 import platform
-import playsound as ps
+import threading
+
+if platform.system() == "Linux":
+    import playsound as ps
+if platform.system() == "Windows":
+    import winsound
+    # needs testing
+if platform.system() == "Darwin":
+    pass
+    # test afplay
+
+
+def play_sound(filename):
+    if platform.system() == "Linux":
+        ps.playsound(filename)
+    if platform.system() == "Windows":
+        winsound.PlaySound(filename)
+        # needs testing
+    if platform.system() == "Darwin":
+        os.system(f"afplay {filename}&")
+        # does this work? got no mac lol
+
+
+def loop_bgm():
+    while True:
+        play_sound('cheetahmen.wav')
+
+
+def update_hud():
+    hud.clear()
+    font_settings = ("Press Start 2P", 24, "normal")
+    hud.write("{} : {}".format(score_1, score_2), align="center", font=font_settings)
+
+
+def on_close():
+    global running
+    running = False
+
 
 # draw screen
 screen = turtle.Screen()
 screen.title("My Pong")
 screen.bgcolor("black")
+screen.bgpic("ff6ocean.png")
 screen.setup(width=800, height=600)
 screen.tracer(0)
 
@@ -32,11 +70,11 @@ paddle_2.goto(350, 0)
 ball = turtle.Turtle()
 ball.speed(0)
 ball.shape("square")
-ball.color("white")
+ball.color("black",  "yellow")
 ball.penup()
 ball.goto(0, 0)
-ball.dx = 1
-ball.dy = 1
+ball.dx = 0.3
+ball.dy = 0.3
 
 # score
 score_1 = 0
@@ -50,14 +88,10 @@ hud.color("white")
 hud.penup()
 hud.hideturtle()
 hud.goto(0, 260)
-hud.write("0 : 0", align="center", font=("Press Start 2P", 24, "normal"))
+update_hud()
 
-
-def play_sound(filename):
-    if platform.system() == "Linux":
-        ps.playsound(filename)
-    if platform.system() == "Windows":
-        os.system(f"afplay {filename}&")
+# function for catching the act of closing the window
+screen.getcanvas().winfo_toplevel().protocol("WM_DELETE_WINDOW", on_close)
 
 
 def paddle_1_up():
@@ -103,7 +137,15 @@ screen.onkeypress(paddle_1_down, "s")
 screen.onkeypress(paddle_2_up, "Up")
 screen.onkeypress(paddle_2_down, "Down")
 
-while True:
+musicLoop = threading.Thread(target=loop_bgm, name='backgroundMusicThread')
+# shut down music thread when the rest of the program exits
+musicLoop.daemon = True
+musicLoop.start()
+
+# condition for the main loop of the game
+running = True
+
+while running:
     screen.update()
 
     # ball movement
@@ -125,8 +167,7 @@ while True:
     # collision with left wall
     if ball.xcor() < -390:
         score_2 += 1
-        hud.clear()
-        hud.write("{} : {}".format(score_1, score_2), align="center", font=("Press Start 2P", 24, "normal"))
+        update_hud()
         play_sound("258020__kodack__arcade-bleep-sound.wav")
         ball.goto(0, 0)
         ball.dx *= -1
@@ -134,8 +175,7 @@ while True:
     # collision with right wall
     if ball.xcor() > 390:
         score_1 += 1
-        hud.clear()
-        hud.write("{} : {}".format(score_1, score_2), align="center", font=("Press Start 2P", 24, "normal"))
+        update_hud()
         play_sound("258020__kodack__arcade-bleep-sound.wav")
         ball.goto(0, 0)
         ball.dx *= -1

@@ -13,4 +13,4 @@
 Opcional:
  - adicionarmos alguma mecânica nova? (recomendado pelo Jucimar)
  - mudar as cores ou colocar um background?
- - colocar alguma música de fundo para tocar?
+ - colocar alguma música de fundo para tocar? [FEITO]
