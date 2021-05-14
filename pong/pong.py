@@ -3,22 +3,13 @@ import os
 import platform
 import threading
 
-if platform.system() == "Linux":
+if platform.system() == "Linux" or platform.system() == "Windows":
     import playsound as ps
-if platform.system() == "Windows":
-    import winsound
-    # needs testing
-if platform.system() == "Darwin":
-    pass
-    # test afplay
 
 
 def play_sound(filename):
-    if platform.system() == "Linux":
+    if platform.system() == "Linux" or platform.system() == "Windows":
         ps.playsound(filename)
-    if platform.system() == "Windows":
-        winsound.PlaySound(filename)
-        # needs testing
     if platform.system() == "Darwin":
         os.system(f"afplay {filename}&")
         # does this work? got no mac lol
