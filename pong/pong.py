@@ -12,7 +12,6 @@ def play_sound(filename):
         ps.playsound(filename)
     if platform.system() == "Darwin":
         os.system(f"afplay {filename}&")
-        # does this work? got no mac lol
 
 
 def loop_bgm():
@@ -31,18 +30,81 @@ def on_close():
     running = False
 
 
+def move_paddle(paddle, direction):
+    y = paddle.ycor()
+    if direction == "up":
+        # if PADDLE_WALK_SIZE goes beyond the window, correct it putting the paddle into the very top
+        if y < WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y - PADDLE_WALK_SIZE:
+            y += PADDLE_WALK_SIZE
+        else:
+            y = WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y
+
+    if direction == "down":
+        # if PADDLE_WALK_SIZE goes beyond the window, correct it putting the paddle into the very bottom
+        if y > -(WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y - PADDLE_WALK_SIZE):
+            y -= PADDLE_WALK_SIZE
+        else:
+            y = -(WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y)
+
+    paddle.sety(y)
+
+
+# the method onkeypress of turtle.Screen only accepts functions without parameters
+# therefore we need a function for mapping each key
+def paddle_1_up():
+    move_paddle(paddle_1, "up")
+
+
+def paddle_1_down():
+    move_paddle(paddle_1, "down")
+
+
+def paddle_2_up():
+    move_paddle(paddle_2, "up")
+
+
+def paddle_2_down():
+    move_paddle(paddle_2, "down")
+
+
+def increase_ball_speed():
+    if ball.dx > 0:
+        ball.dx += 0.1
+    else:
+        ball.dx -= 0.1
+
+    if ball.dy > 0:
+        ball.dy += 0.1
+    else:
+        ball.dy -= 0.1
+
+    # changes the direction of the ball after touching a paddle
+    ball.dx *= -1
+
+
+def reset_screen():
+    update_hud()
+    play_sound(SCORE_RAISING_SOUND)
+    ball.goto(0, 0)
+    paddle_1.sety(0)
+    paddle_2.sety(0)
+    ball.dx = BALL_DEFAULT_SPEED
+    ball.dy = BALL_DEFAULT_SPEED
+    ball.dx *= -1
+
+
 # game values
 SQUARE_SIDE = 20
 
 WINDOW_TITLE = "My Pong"
-WINDOW_WIDTH, WINDOW_HEIGHT = 800, 600
+WINDOW_WIDTH, WINDOW_HEIGHT = 1100, 600
 WINDOW_BACKGROUND = "black"
 
 PADDLE_COLOR = "white"
 PADDLE_SHAPE = "square"
 PADDLE_WIDTH, PADDLE_HEIGHT = 1, 5
 PADDLE_OFFSET_X, PADDLE_OFFSET_Y = 50, 50
-PADDLE_WALK_SIZE = 30
+PADDLE_WALK_SIZE = 65
 
 PADDLE_1_UP_KEY = "w"
 PADDLE_1_DOWN_KEY = "s"
@@ -51,6 +113,7 @@ PADDLE_2_DOWN_KEY = "Down"
 
 BALL_SHAPE = "square"
 BALL_COLOR = "white"
+BALL_DEFAULT_SPEED = 0.1
 
 HUD_SHAPE = "square"
 HUD_COLOR = "white"
@@ -97,8 +160,8 @@ ball.shape(BALL_SHAPE)
 ball.color("black",  "yellow")
 ball.penup()
 ball.goto(0, 0)
-ball.dx = 0.3
-ball.dy = 0.3
+ball.dx = BALL_DEFAULT_SPEED
+ball.dy = BALL_DEFAULT_SPEED
 
 # score
 score_1 = 0
@@ -117,45 +180,9 @@ update_hud()
 # function for catching the act of closing the window
 screen.getcanvas().winfo_toplevel().protocol("WM_DELETE_WINDOW", on_close)
 
-
-def paddle_1_up():
-    y = paddle_1.ycor()
-    if y < WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y:
-        y += PADDLE_WALK_SIZE
-    else:
-        y = WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y
-    paddle_1.sety(y)
-
-
-def paddle_1_down():
-    y = paddle_1.ycor()
-    if y > -(WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y):
-        y += -PADDLE_WALK_SIZE
-    else:
-        y = -(WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y)
-    paddle_1.sety(y)
-
-
-def paddle_2_up():
-    y = paddle_2.ycor()
-    if y < WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y:
-        y += PADDLE_WALK_SIZE
-    else:
-        y = WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y
-    paddle_2.sety(y)
-
-
-def paddle_2_down():
-    y = paddle_2.ycor()
-    if y > -(WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y):
-        y += -PADDLE_WALK_SIZE
-    else:
-        y = -(WINDOW_HEIGHT // 2 - PADDLE_OFFSET_Y)
-    paddle_2.sety(y)
-
-
 # keyboard
 screen.listen()
+
 screen.onkeypress(paddle_1_up, PADDLE_1_UP_KEY)
 screen.onkeypress(paddle_1_down, PADDLE_1_DOWN_KEY)
 screen.onkeypress(paddle_2_up, PADDLE_2_UP_KEY)
@@ -190,28 +217,22 @@ while running:
 
     # collision with left wall
     if ball.xcor() < -(WINDOW_WIDTH // 2 - WALL_COLLISION_MARGIN):
-        score_2 += 1
-        update_hud()
-        play_sound(SCORE_RAISING_SOUND)
-        ball.goto(0, 0)
-        ball.dx *= -1
+        score_1 += 1
+        reset_screen()
 
     # collision with right wall
     if ball.xcor() > WINDOW_WIDTH // 2 - WALL_COLLISION_MARGIN:
-        score_1 += 1
-        update_hud()
-        play_sound(SCORE_RAISING_SOUND)
-        ball.goto(0, 0)
-        ball.dx *= -1
+        score_2 += 1
+        reset_screen()
 
     # collision with the paddle 1
     if ball.xcor() < -PADDLE_COLLISION_AREA_X and \
             (paddle_1.ycor() + PADDLE_REAL_HEIGHT // 2) > ball.ycor() > (paddle_1.ycor() - PADDLE_REAL_HEIGHT // 2):
-        ball.dx *= -1
+        increase_ball_speed()
         play_sound(BOUNCE_SOUND)
 
     # collision with the paddle 2
     if ball.xcor() > PADDLE_COLLISION_AREA_X and \
             (paddle_2.ycor() + PADDLE_REAL_HEIGHT // 2) > ball.ycor() > (paddle_2.ycor() - PADDLE_REAL_HEIGHT // 2):
-        ball.dx *= -1
+        increase_ball_speed()
         play_sound(BOUNCE_SOUND)

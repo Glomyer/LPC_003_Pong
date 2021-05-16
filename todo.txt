@@ -1,16 +1,15 @@
- - criar variáveis para as constantes
- - cuidar das warnings referentes aos typos
- - criar uma função para a inicialização dos elementos (desenho da tela, da bola etc)
- - criar funções para evitarmos o warning de código duplicado
-     - criarmos uma só função para a movimentação das paddles
-     - criarmos uma só função para detecção de colisão com a parede e com a paddle)
- - ajustar a velocidade do jogo (no meu computador o jogo está rápido demais)
+ - criar variáveis para as constantes [FEITO]
+ - cuidar das warnings referentes aos typos [FEITO]
+ - criar funções para evitarmos o warning de código duplicado [FEITO]
+     - criarmos uma só função para a movimentação das paddles [FEITO]
+     - criarmos uma só função para detecção de colisão com a parede e com a paddle) [FEITO]
+ - ajustar a velocidade do jogo (no meu computador o jogo está rápido demais) [FEITO]
  - criarmos uma estado final para o jogo, vitória após 10 pontos
- - tratar eventuais bugs que possam ocorrer em uma das plataformas (Windows ou Linux)
+ - tratar eventuais bugs que possam ocorrer em uma das plataformas (Windows ou Linux) [FEITO]
 
 
 
 Opcional:
- - adicionarmos alguma mecânica nova? (recomendado pelo Jucimar)
- - mudar as cores ou colocar um background?
+ - adicionarmos alguma mecânica nova? (recomendado pelo Jucimar) [FEITO]
+ - mudar as cores ou colocar um background? [FEITO]
  - colocar alguma música de fundo para tocar? [FEITO]
