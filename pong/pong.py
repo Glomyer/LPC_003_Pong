@@ -15,7 +15,7 @@ def play_sound(filename):
 
 
 def loop_bgm():
-    while True:
+    while score_1 < POINTS_TO_WIN and score_2 < POINTS_TO_WIN:
         play_sound('cheetahmen.wav')
 
 
@@ -93,6 +93,16 @@ def reset_screen():
     ball.dx *= -1
 
 
+def winner_screen(player):
+    ball.dx = 0
+    ball.dy = 0
+    screen.bgpic("bb2.png")
+    ball.hideturtle()
+    hud.clear()
+    hud.write("{} WINS".format("Player " + str(player)), align="center", font=("Press Start 2P", 24, "normal"))
+    play_sound("winner.wav")
+
+
 # game values
 SQUARE_SIDE = 20
 
@@ -105,6 +115,9 @@ PADDLE_SHAPE = "square"
 PADDLE_WIDTH, PADDLE_HEIGHT = 1, 5
 PADDLE_OFFSET_X, PADDLE_OFFSET_Y = 50, 50
 PADDLE_WALK_SIZE = 65
+# starting and ending pixels
+PADDLE_START = 475
+PADDLE_END = 540
 
 PADDLE_1_UP_KEY = "w"
 PADDLE_1_DOWN_KEY = "s"
@@ -131,7 +144,7 @@ PADDLE_REAL_WIDTH, PADDLE_REAL_HEIGHT = PADDLE_WIDTH * SQUARE_SIDE, PADDLE_HEIGH
 screen = turtle.Screen()
 screen.title(WINDOW_TITLE)
 screen.bgcolor(WINDOW_BACKGROUND)
-screen.bgpic("ff6ocean.png")
+screen.bgpic("bgg2.png")
 screen.setup(width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
 screen.tracer(0)
 
@@ -157,7 +170,7 @@ paddle_2.goto(WINDOW_WIDTH // 2 - PADDLE_OFFSET_X, 0)
 ball = turtle.Turtle()
 ball.speed(0)
 ball.shape(BALL_SHAPE)
-ball.color("black",  "yellow")
+ball.color("black", "yellow")
 ball.penup()
 ball.goto(0, 0)
 ball.dx = BALL_DEFAULT_SPEED
@@ -166,6 +179,7 @@ ball.dy = BALL_DEFAULT_SPEED
 # score
 score_1 = 0
 score_2 = 0
+POINTS_TO_WIN = 10
 
 # head-up display
 hud = turtle.Turtle()
@@ -183,10 +197,10 @@ screen.getcanvas().winfo_toplevel().protocol("WM_DELETE_WINDOW", on_close)
 # keyboard
 screen.listen()
 
-screen.onkeypress(paddle_1_up, PADDLE_1_UP_KEY)
-screen.onkeypress(paddle_1_down, PADDLE_1_DOWN_KEY)
-screen.onkeypress(paddle_2_up, PADDLE_2_UP_KEY)
-screen.onkeypress(paddle_2_down, PADDLE_2_DOWN_KEY)
+screen.onkey(paddle_1_up, PADDLE_1_UP_KEY)
+screen.onkey(paddle_1_down, PADDLE_1_DOWN_KEY)
+screen.onkey(paddle_2_up, PADDLE_2_UP_KEY)
+screen.onkey(paddle_2_down, PADDLE_2_DOWN_KEY)
 
 musicLoop = threading.Thread(target=loop_bgm, name='backgroundMusicThread')
 # shut down music thread when the rest of the program exits
@@ -198,6 +212,11 @@ running = True
 
 while running:
     screen.update()
+
+    if score_1 >= POINTS_TO_WIN:
+        winner_screen(1)
+    if score_2 >= POINTS_TO_WIN:
+        winner_screen(2)
 
     # ball movement
     ball.setx(ball.xcor() + ball.dx)
@@ -217,12 +236,12 @@ while running:
 
     # collision with left wall
     if ball.xcor() < -(WINDOW_WIDTH // 2 - WALL_COLLISION_MARGIN):
-        score_1 += 1
+        score_2 += 1
         reset_screen()
 
     # collision with right wall
     if ball.xcor() > WINDOW_WIDTH // 2 - WALL_COLLISION_MARGIN:
-        score_2 += 1
+        score_1 += 1
         reset_screen()
 
     # collision with the paddle 1
@@ -236,3 +255,14 @@ while running:
             (paddle_2.ycor() + PADDLE_REAL_HEIGHT // 2) > ball.ycor() > (paddle_2.ycor() - PADDLE_REAL_HEIGHT // 2):
         increase_ball_speed()
         play_sound(BOUNCE_SOUND)
+
+    # Paddle barrier
+    if -PADDLE_START > ball.xcor() > -PADDLE_END and (
+            (paddle_1.ycor() + PADDLE_OFFSET_Y) > ball.ycor() > (paddle_1.ycor() - PADDLE_OFFSET_Y)):
+        ball.setx(-PADDLE_START)
+        ball.dx *= - 1
+
+    if PADDLE_START < ball.xcor() < PADDLE_END and (
+            (paddle_2.ycor() + PADDLE_OFFSET_Y) > ball.ycor() > (paddle_2.ycor() - PADDLE_OFFSET_Y)):
+        ball.setx(PADDLE_START)
+        ball.dx *= - 1
