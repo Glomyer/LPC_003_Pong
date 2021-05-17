@@ -260,11 +260,11 @@ while running:
     if -PADDLE_START > ball.xcor() > -PADDLE_END and (
             (paddle_1.ycor() + PADDLE_OFFSET_Y) > ball.ycor() > (paddle_1.ycor() - PADDLE_OFFSET_Y)):
         ball.setx(-PADDLE_START)
-        ball.dx *= - 1
+        increase_ball_speed()
         play_sound(BOUNCE_SOUND)
 
     if PADDLE_START < ball.xcor() < PADDLE_END and (
             (paddle_2.ycor() + PADDLE_OFFSET_Y) > ball.ycor() > (paddle_2.ycor() - PADDLE_OFFSET_Y)):
         ball.setx(PADDLE_START)
-        ball.dx *= - 1
+        increase_ball_speed()
         play_sound(BOUNCE_SOUND)
